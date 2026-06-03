@@ -26,7 +26,22 @@ function getCurrentSaoPauloDateTime() {
 }
 
 function formatBrasiliaDateTime(value) {
-  const date = new Date(value.replace(' ', 'T') + '-03:00');
+  if (!value) {
+    return null;
+  }
+
+  let date;
+
+  if (value instanceof Date) {
+    date = value;
+  } else {
+    const normalizedValue = String(value).includes('T') ? String(value) : String(value).replace(' ', 'T');
+    date = new Date(normalizedValue.endsWith('Z') || /[+-]\d{2}:?\d{2}$/.test(normalizedValue) ? normalizedValue : `${normalizedValue}-03:00`);
+  }
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
 
   return new Intl.DateTimeFormat('pt-BR', {
     timeZone: 'America/Sao_Paulo',
