@@ -70,4 +70,38 @@ Resposta de erro:
   "success": false,
   "message": "Descrição do erro"
 }
+
+## Deploy (Render backend / Vercel frontend)
+
+Resumo rápido:
+- O backend pode ser implantado no Render como um `Web Service` usando o comando de start `npm start`.
+- O frontend pode ser implantado no Vercel apontando para a pasta `front` (projeto Vite). Configure a variável `VITE_API_URL` para apontar para a URL do backend (ex: `https://seu-backend.onrender.com/api`).
+
+Ambiente necessário para o backend (defina em Render > Environment):
+- `HOST` - hostname do MySQL (ex: dbrhuan.mysql.database.azure.com)
+- `DB_PORT` - porta do MySQL (3306). **Não** use a variável `PORT` para a porta do banco — `PORT` é reservada pelo Render para o porto HTTP do serviço.
+- `USER` - usuário do MySQL
+- `PASSWORD` - senha do MySQL
+- `DATABASE` - nome do database (será criado automaticamente pelo bootstrap)
+- `SSL` - `require` para ativar SSL com Azure MySQL
+- `FRONTEND_URL` - URL pública do frontend (ex: https://seu-frontend.vercel.app) — usado para CORS
+- `APP_PORT` (opcional) - porta alternativa para o app. Render fornece `PORT` automaticamente e o serviço deve bindar àquela porta.
+
+Passos para publicar o backend no Render:
+1. Crie um novo `Web Service` no Render.
+2. Aponte o repositório e a branch.
+3. Build & Start commands: não é necessário build; use `npm install` como build e `npm start` como start command (Render permite configurar).
+4. Defina as variáveis de ambiente acima.
+5. Se necessário, permita o IP do Render no firewall do Azure MySQL ou configure SSL e acesso público.
+
+Passos para publicar o frontend no Vercel:
+1. Crie um novo projeto apontando para a pasta `front` do repositório.
+2. Variáveis de ambiente no Vercel: `VITE_API_URL` = `https://<seu-backend>.onrender.com/api`.
+3. Build command: `npm run build`. Output dir: `dist` (padrão do Vite).
+
+Observações importantes:
+- A aplicação já aceita upload de imagem e grava o `Buffer` no campo `foto` como `MEDIUMBLOB` (via Sequelize `BLOB('medium')`).
+- Se o banco estiver protegido por firewall, garanta que o Render tenha permissão de conexão (use allowlist ou VNet/peering, dependendo da sua infra). Azure MySQL geralmente requer SSL; o projeto já envia a opção `ssl` quando `SSL=require`.
+- Defina `FRONTEND_URL` no Render com a URL do Vercel para evitar problemas de CORS.
+
 ```

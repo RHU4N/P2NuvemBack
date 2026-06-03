@@ -6,7 +6,7 @@ const sslEnabled = String(process.env.SSL || '').toLowerCase() === 'require';
 async function ensureDatabase() {
   const connection = await mysql.createConnection({
     host: process.env.HOST,
-    port: Number(process.env.PORT || 3306),
+    port: Number(process.env.DB_PORT || process.env.MYSQL_PORT || process.env.DBPORT || 3306),
     user: process.env.USER,
     password: process.env.PASSWORD,
     ssl: sslEnabled ? { rejectUnauthorized: true } : undefined,
