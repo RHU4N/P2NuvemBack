@@ -22,8 +22,14 @@ async function ensureAlunoTableSchema() {
   }
 
   await sequelize.query(
-    "UPDATE alunos SET dt_cadastro = CURRENT_TIMESTAMP WHERE dt_cadastro IS NULL OR dt_cadastro = '0000-00-00 00:00:00'"
+    "UPDATE alunos SET dt_cadastro = CURRENT_TIMESTAMP WHERE dt_cadastro IS NULL OR dt_cadastro = '0000-00-00 00:00:00' OR dt_cadastro = '0000-00-00'"
   );
+
+  await queryInterface.changeColumn('alunos', 'dt_cadastro', {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: sequelize.literal('CURRENT_TIMESTAMP'),
+  });
 }
 
 module.exports = {

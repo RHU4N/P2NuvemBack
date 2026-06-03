@@ -4,6 +4,37 @@ const { uploadSingleFoto, handleUploadError } = require('../middlewares/uploadAl
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function getCurrentSaoPauloDateTime() {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'America/Sao_Paulo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).formatToParts(new Date());
+
+  const valueByType = Object.fromEntries(
+    parts
+      .filter((part) => part.type !== 'literal')
+      .map((part) => [part.type, part.value])
+  );
+
+  return `${valueByType.year}-${valueByType.month}-${valueByType.day} ${valueByType.hour}:${valueByType.minute}:${valueByType.second}`;
+}
+
+function formatBrasiliaDateTime(value) {
+  const date = new Date(value.replace(' ', 'T') + '-03:00');
+
+  return new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    dateStyle: 'short',
+    timeStyle: 'medium',
+  }).format(date);
+}
+
 function cadastrarAluno(req, res) {
   uploadSingleFoto(req, res, async (uploadError) => {
     if (uploadError) {
@@ -70,6 +101,7 @@ function cadastrarAluno(req, res) {
         email_aluno,
         observacao: observacao || null,
         foto,
+        dt_cadastro: getCurrentSaoPauloDateTime(),
       });
 
       return res.status(201).json({
@@ -81,7 +113,7 @@ function cadastrarAluno(req, res) {
           usuario_acesso: alunoCriado.usuario_acesso,
           email_aluno: alunoCriado.email_aluno,
           observacao: alunoCriado.observacao,
-          dt_cadastro: alunoCriado.dt_cadastro,
+          dt_cadastro: formatBrasiliaDateTime(alunoCriado.dt_cadastro),
         }
       });
     } catch (error) {
