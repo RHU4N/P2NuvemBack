@@ -11,11 +11,34 @@ const app = express();
 const port = Number(process.env.PORT || process.env.APP_PORT || 3000);
 
 const frontendOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
+const allowedOrigins = new Set(
+  [frontendOrigin, 'http://localhost:5173', 'http://127.0.0.1:5173']
+    .filter(Boolean)
+    .map((origin) => origin.trim())
+);
+
 app.use(
   cors({
-    origin: frontendOrigin,
+    origin(origin, callback) {
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      const normalizedOrigin = origin.trim();
+      const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(normalizedOrigin);
+      const isVercelPreview = /^https:\/\/[a-z0-9-]+\.vercel\.app$/.test(normalizedOrigin);
+
+      if (allowedOrigins.has(normalizedOrigin) || isLocalhost || isVercelPreview) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`Origem bloqueada pelo CORS: ${normalizedOrigin}`));
+    },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
+app.options('*', cors());
 app.use(express.json());
 
 app.get('/health', (req, res) => {
