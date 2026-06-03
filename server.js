@@ -3,6 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const { ensureDatabase } = require('./config/bootstrapDatabase');
+const { ensureAlunoTableSchema } = require('./config/ensureAlunoTableSchema');
 const sequelize = require('./config/sequelize');
 require('./models/Aluno');
 const alunosRoutes = require('./routes/alunos');
@@ -57,7 +58,8 @@ app.use((req, res) => {
 async function start() {
   try {
     await ensureDatabase();
-    await sequelize.sync({ alter: true });
+    await sequelize.sync();
+    await ensureAlunoTableSchema();
 
     app.listen(port, () => {
       console.log(`Servidor rodando na porta ${port}`);
