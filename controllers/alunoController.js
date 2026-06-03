@@ -35,6 +35,83 @@ function formatBrasiliaDateTime(value) {
   }).format(date);
 }
 
+function sanitizarAluno(aluno) {
+  return {
+    nome_completo: aluno.nome_completo,
+    email_aluno: aluno.email_aluno,
+    observacao: aluno.observacao,
+    foto: aluno.foto,
+    dt_cadastro: aluno.dt_cadastro ? formatBrasiliaDateTime(aluno.dt_cadastro) : null,
+  };
+}
+
+async function listarAlunos(req, res) {
+  try {
+    const alunos = await Aluno.findAll({
+      order: [['dt_cadastro', 'DESC']],
+      attributes: ['nome_completo', 'email_aluno', 'observacao', 'foto', 'dt_cadastro'],
+    });
+
+    return res.json({
+      success: true,
+      alunos: alunos.map((aluno) => sanitizarAluno(aluno)),
+    });
+  } catch (error) {
+    console.error('Erro ao listar alunos:', error);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Erro interno ao listar alunos',
+    });
+  }
+}
+
+async function loginAluno(req, res) {
+  try {
+    const { usuario_acesso, senha } = req.body;
+
+    if (!usuario_acesso || !senha) {
+      return res.status(400).json({
+        success: false,
+        message: 'Usuário e senha são obrigatórios',
+      });
+    }
+
+    const aluno = await Aluno.findOne({
+      where: { usuario_acesso },
+    });
+
+    if (!aluno) {
+      return res.status(401).json({
+        success: false,
+        message: 'Usuário ou senha inválidos',
+      });
+    }
+
+    const senhaValida = await bcrypt.compare(senha, aluno.senha_hash);
+
+    if (!senhaValida) {
+      return res.status(401).json({
+        success: false,
+        message: 'Usuário ou senha inválidos',
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Login realizado com sucesso',
+      aluno: sanitizarAluno(aluno),
+    });
+  } catch (error) {
+    console.error('Erro ao fazer login:', error);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Erro interno ao fazer login',
+    });
+  }
+}
+
 function cadastrarAluno(req, res) {
   uploadSingleFoto(req, res, async (uploadError) => {
     if (uploadError) {
@@ -128,5 +205,7 @@ function cadastrarAluno(req, res) {
 }
 
 module.exports = {
+  listarAlunos,
+  loginAluno,
   cadastrarAluno
 };
