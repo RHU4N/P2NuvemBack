@@ -57,7 +57,7 @@ app.use((req, res) => {
 async function start() {
   try {
     await ensureDatabase();
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
 
     app.listen(port, () => {
       console.log(`Servidor rodando na porta ${port}`);

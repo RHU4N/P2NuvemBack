@@ -63,7 +63,7 @@ function cadastrarAluno(req, res) {
 
       const senhaHash = await bcrypt.hash(senha, 10);
 
-      await Aluno.create({
+      const alunoCriado = await Aluno.create({
         nome_completo,
         usuario_acesso,
         senha_hash: senhaHash,
@@ -74,7 +74,15 @@ function cadastrarAluno(req, res) {
 
       return res.status(201).json({
         success: true,
-        message: 'Aluno cadastrado com sucesso'
+        message: 'Aluno cadastrado com sucesso',
+        aluno: {
+          id_aluno: alunoCriado.id_aluno,
+          nome_completo: alunoCriado.nome_completo,
+          usuario_acesso: alunoCriado.usuario_acesso,
+          email_aluno: alunoCriado.email_aluno,
+          observacao: alunoCriado.observacao,
+          dt_cadastro: alunoCriado.dt_cadastro,
+        }
       });
     } catch (error) {
       console.error('Erro ao cadastrar aluno:', error);

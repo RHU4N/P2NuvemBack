@@ -35,6 +35,11 @@ const Aluno = sequelize.define(
       type: DataTypes.BLOB('medium'),
       allowNull: true,
     },
+    dt_cadastro: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
   },
   {
     tableName: 'alunos',
